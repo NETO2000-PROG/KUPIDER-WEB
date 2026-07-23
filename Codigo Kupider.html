@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kupider Web Platform - Powered by MERC TECH</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b0b0e;
+    }
+    .bg-mesh-kupider {
+      background: radial-gradient(circle at 10% 20%, rgba(0, 82, 255, 0.2) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 10%, rgba(255, 0, 127, 0.2) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 90%, rgba(15, 15, 20, 0.95) 0%, #0d0d11 100%);
+      background-color: #0d0d11;
+    }
+    .glass-panel {
+      background: rgba(18, 18, 24, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(25, 25, 35, 0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    /* Animaciones de Swipe */
+    .swipe-card {
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+    }
+    .swipe-left {
+      transform: translateX(-150%) rotate(-20deg) !important;
+      opacity: 0 !important;
+    }
+    .swipe-right {
+      transform: translateX(150%) rotate(20deg) !important;
+      opacity: 0 !important;
+    }
+  </style>
+</head>
+<body class="text-zinc-100 min-h-screen bg-mesh-kupider flex flex-col justify-between overflow-x-hidden">
+
+  <!-- HEADER GLOBAL -->
+  <header class="w-full glass-panel border-b border-zinc-800/60 sticky top-0 z-50 px-6 py-3.5 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <svg class="w-9 h-9" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 400V150L250 280L400 150V300" stroke="#1c1c1e" stroke-width="55" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M400 300V400" stroke="#0052FF" stroke-width="55" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1 class="text-xs font-bold uppercase tracking-widest text-blue-500 font-mono">MERC TECH</h1>
+        <p class="text-[9px] text-zinc-500 uppercase tracking-wider">Kupider Platform</p>
+      </div>
+    </div>
+    
+    <!-- LOGO KUPIDER -->
+    <div class="flex items-center gap-2 bg-zinc-900/60 border border-zinc-800/80 px-4 py-1.5 rounded-full shadow-lg">
+      <img src="Logo K.png" alt="Kupider Logo" class="w-6 h-6 object-contain" onerror="this.onerror=null; this.replaceWith(document.getElementById('kupiderHeaderSvg').cloneNode(true));">
+      <svg id="kupiderHeaderSvg" class="w-6 h-6 hidden" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="55" y="45" width="22" height="110" rx="6" fill="#121212"/>
+        <path d="M77 100L145 45" stroke="#0052FF" stroke-width="22" stroke-linecap="round"/>
+        <path d="M100 118L145 155" stroke="#FF2D55" stroke-width="22" stroke-linecap="round"/>
+      </svg>
+      <span class="font-black text-sm tracking-widest uppercase text-white">
+        KUPID<span class="text-blue-500">E</span><span class="text-pink-500">R</span>
+      </span>
+    </div>
+
+    <!-- USUARIO / LOGOUT -->
+    <div id="header-user-section" class="flex items-center gap-3">
+      <button id="btn-show-login" onclick="showAuthModal('login')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition">
+        Iniciar Sesión
+      </button>
+      <button id="btn-show-register" onclick="showAuthModal('register')" class="bg-gradient-to-r from-blue-600 to-pink-600 hover:opacity-90 text-white font-bold text-xs px-4 py-2 rounded-xl transition">
+        Registrarse
+      </button>
+      <div id="user-logged-info" class="hidden flex items-center gap-3">
+        <img id="header-avatar" class="w-8 h-8 rounded-full object-cover border border-pink-500" src="https://via.placeholder.com/150" alt="Avatar">
+        <span id="header-username" class="text-xs font-bold text-white hidden md:inline"></span>
+        <button onclick="logoutUser()" class="text-xs text-red-400 hover:text-red-300 font-bold bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MODAL DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+  <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-lg rounded-3xl p-6 md:p-8 relative border border-zinc-700/60 max-h-[90vh] overflow-y-auto no-scrollbar">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+
+      <!-- TAB LOGIN -->
+      <div id="auth-login-container" class="space-y-4">
+        <h3 class="text-2xl font-black text-white text-center">Iniciar Sesión</h3>
+        <form onsubmit="handleLogin(event)" class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-zinc-400 block mb-1">Correo Electrónico / Usuario</label>
+            <input type="text" id="login-email" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-zinc-400 block mb-1">Contraseña</label>
+            <input type="password" id="login-password" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-blue-500">
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition">Entrar</button>
+        </form>
+        <p class="text-center text-xs text-zinc-500">¿No tienes cuenta? <a href="#" onclick="showAuthModal('register')" class="text-pink-400 font-bold">Regístrate aquí</a></p>
+      </div>
+
+      <!-- TAB REGISTRO -->
+      <div id="auth-register-container" class="space-y-4 hidden">
+        <h3 class="text-2xl font-black text-white text-center">Crear Cuenta en Kupider</h3>
+        <form onsubmit="handleRegister(event)" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold text-zinc-400 block mb-1">Nombre Completo</label>
+              <input type="text" id="reg-name" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-zinc-400 block mb-1">Edad</label>
+              <input type="number" id="reg-age" min="18" max="99" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-zinc-400 block mb-1">Correo Electrónico</label>
+            <input type="email" id="reg-email" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white">
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-zinc-400 block mb-1">Contraseña</label>
+            <input type="password" id="reg-password" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white">
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-zinc-400 block mb-1">Busco Interés en:</label>
+            <select id="reg-interest" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs text-white">
+              <option value="Mujeres">Mujeres</option>
+              <option value="Hombres">Hombres</option>
+              <option value="Solo Amigos">Solo Amigos</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-zinc-400 block mb-1">Selecciona tus Hobbies:</label>
+            <div class="grid grid-cols-2 gap-2 text-xs text-zinc-300">
+              <label class="flex items-center gap-2"><input type="checkbox" value="Música" class="reg-hobby accent-pink-500"> Música</label>
+              <label class="flex items-center gap-2"><input type="checkbox" value="Gimnasio" class="reg-hobby accent-pink-500"> Gimnasio / Fitness</label>
+              <label class="flex items-center gap-2"><input type="checkbox" value="Videojuegos" class="reg-hobby accent-pink-500"> Videojuegos</label>
+              <label class="flex items-center gap-2"><input type="checkbox" value="Café" class="reg-hobby accent-pink-500"> Cafeterías</label>
+              <label class="flex items-center gap-2"><input type="checkbox" value="Cine" class="reg-hobby accent-pink-500"> Cine & Series</label>
+              <label class="flex items-center gap-2"><input type="checkbox" value="Lectura" class="reg-hobby accent-pink-500"> Lectura</label>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-zinc-400 block mb-1">Foto de Perfil:</label>
+            <input type="file" id="reg-photo" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-600 file:text-white hover:file:bg-pink-700">
+          </div>
+
+          <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-pink-600 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-lg">Completar Registro</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN PRINCIPAL DE NAVEGACIÓN Y CONTENIDO -->
+  <main class="max-w-6xl mx-auto w-full px-4 py-6 flex-grow flex flex-col gap-6">
+    
+    <!-- BARRA DE NAVEGACIÓN TABS -->
+    <div class="flex justify-center gap-2 bg-zinc-900/80 p-1.5 rounded-2xl border border-zinc-800 max-w-md mx-auto">
+      <button onclick="switchTab('swipe')" id="tab-btn-swipe" class="flex-1 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white transition">
+        <i class="fa-solid fa-fire mr-1"></i> Descubrir (Swiping)
+      </button>
+      <button onclick="switchTab('coupons')" id="tab-btn-coupons" class="flex-1 py-2 text-xs font-bold rounded-xl text-zinc-400 hover:text-white transition">
+        <i class="fa-solid fa-utensils mr-1"></i> Beneficios B2B
+      </button>
+    </div>
+
+    <!-- VISTA 1: SWIPE DE PERFILES -->
+    <section id="view-swipe" class="flex flex-col items-center justify-center space-y-4">
+      <div id="swipe-card-container" class="relative w-full max-w-sm h-[480px]">
+        <!-- Tarjetas dinámicas inyectadas con JS -->
+      </div>
+
+      <!-- BOTONES DE SWIPE ANIMADOS -->
+      <div class="flex items-center gap-6 pt-2">
+        <button onclick="triggerSwipe('left')" class="w-14 h-14 rounded-full bg-zinc-900 border border-zinc-800 text-red-500 hover:bg-red-500 hover:text-white text-xl transition flex items-center justify-center shadow-lg active:scale-90">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <button onclick="triggerSwipe('right')" class="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-pink-600 text-white text-xl transition flex items-center justify-center shadow-lg shadow-pink-500/20 active:scale-90">
+          <i class="fa-solid fa-heart"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- VISTA 2: B2B CUPONERA RECONOCIDA -->
+    <section id="view-coupons" class="hidden space-y-6">
+      <div class="bg-zinc-900/40 p-5 rounded-3xl border border-zinc-800 text-center max-w-2xl mx-auto">
+        <span class="bg-pink-500/10 text-pink-400 border border-pink-500/20 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase font-mono">Alianzas Exclusivas MTY</span>
+        <h3 class="text-xl font-extrabold text-white mt-2">Cuponera de Citas Universitario Kupider</h3>
+        <p class="text-zinc-400 text-xs mt-1">Presenta tu perfil activo de Kupider en los mejores lugares de ambiente juvenil.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Tim Hortons -->
+        <div class="glass-panel p-5 rounded-3xl flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-red-400 font-mono">CAFETERÍA</span>
+              <i class="fa-solid fa-mug-saucer text-zinc-600"></i>
+            </div>
+            <h4 class="text-base font-extrabold text-white">Tim Hortons</h4>
+            <p class="text-xs text-zinc-400 mt-1">2x1 en French Vanilla y Timbits gratis en tu primera cita con Match Kupider.</p>
+          </div>
+          <button onclick="alert('Cupón canjeado: Tim Hortons 2x1')" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2.5 rounded-xl transition">Canjear Cupón</button>
+        </div>
+
+        <!-- Starbucks -->
+        <div class="glass-panel p-5 rounded-3xl flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-emerald-400 font-mono">CAFETERÍA</span>
+              <i class="fa-solid fa-coffee text-zinc-600"></i>
+            </div>
+            <h4 class="text-base font-extrabold text-white">Starbucks Tec / Anáhuac</h4>
+            <p class="text-xs text-zinc-400 mt-1">Upgrade de tamaño gratis en bebidas de temporada para ti y tu pareja.</p>
+          </div>
+          <button onclick="alert('Cupón canjeado: Starbucks Upgrade')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition">Canjear Cupón</button>
+        </div>
+
+        <!-- La Cervecería Purísima -->
+        <div class="glass-panel p-5 rounded-3xl flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-amber-400 font-mono">RESTAURANTE / BAR</span>
+              <i class="fa-solid fa-beer-mug-empty text-zinc-600"></i>
+            </div>
+            <h4 class="text-base font-extrabold text-white">Cervecería Purísima / B. Antiguo</h4>
+            <p class="text-xs text-zinc-400 mt-1">Orden de boneless gratis en consumos mayores a $250 MXN.</p>
+          </div>
+          <button onclick="alert('Cupón canjeado: Cervecería Boneless')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 rounded-xl transition">Canjear Cupón</button>
+        </div>
+
+        <!-- Wings Army / Barrio -->
+        <div class="glass-panel p-5 rounded-3xl flex flex-col justify-between space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-orange-400 font-mono">JUVENIL</span>
+              <i class="fa-solid fa-drumstick-bite text-zinc-600"></i>
+            </div>
+            <h4 class="text-base font-extrabold text-white">Wings Army Tec</h4>
+            <p class="text-xs text-zinc-400 mt-1">20% de descuento total en mesas con código de verificación Kupider.</p>
+          </div>
+          <button onclick="alert('Cupón canjeado: Wings Army 20%')" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs py-2.5 rounded-xl transition">Canjear Cupón</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="w-full glass-panel border-t border-zinc-800/60 py-4 text-center text-xs text-zinc-500">
+    © 2026 MERC TECH. Kupider Platform - Universidad & Social Network.
+  </footer>
+
+  <!-- LÓGICA INTERACTIVA JAVASCRIPT -->
+  <script>
+    // PERFILES PREDETERMINADOS (4 A 6 PERFILES)
+    const mockProfiles = [
+      { name: "Mariana Fuentes", age: 21, location: "San Nicolás", hobbies: ["Videojuegos", "Música"], photo: "MARIANA.PNG", fallback: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500" },
+      { name: "Diego Garza", age: 22, location: "Monterrey", hobbies: ["Gimnasio", "Lectura"], photo: "DIEGO.PNG", fallback: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500" },
+      { name: "Sofia Lomelí", age: 20, location: "FCFM UANL", hobbies: ["Café", "Cine"], photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500" },
+      { name: "Carlos Rodríguez", age: 23, location: "Tec Mty", hobbies: ["Gimnasio", "Música"], photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500" },
+      { name: "Valeria Ríos", age: 21, location: "Escobedo", hobbies: ["Videojuegos", "Cine"], photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500" }
+    ];
+
+    let currentProfileIndex = 0;
+    let currentUser = JSON.parse(localStorage.getItem('kupider_user')) || null;
+
+    window.onload = () => {
+      checkUserSession();
+      renderCurrentCard();
+    };
+
+    function checkUserSession() {
+      if (currentUser) {
+        document.getElementById('btn-show-login').classList.add('hidden');
+        document.getElementById('btn-show-register').classList.add('hidden');
+        document.getElementById('user-logged-info').classList.remove('hidden');
+        document.getElementById('header-username').innerText = currentUser.name;
+        document.getElementById('header-avatar').src = currentUser.photo || 'https://via.placeholder.com/150';
+      } else {
+        document.getElementById('btn-show-login').classList.remove('hidden');
+        document.getElementById('btn-show-register').classList.remove('hidden');
+        document.getElementById('user-logged-info').classList.add('hidden');
+      }
+    }
+
+    function renderCurrentCard() {
+      const container = document.getElementById('swipe-card-container');
+      if (currentProfileIndex >= mockProfiles.length) {
+        container.innerHTML = `
+          <div class="glass-panel w-full h-full rounded-[32px] flex flex-col items-center justify-center p-6 text-center">
+            <i class="fa-solid fa-check-circle text-4xl text-emerald-400 mb-3"></i>
+            <h4 class="text-xl font-bold text-white">¡Has visto todos los perfiles!</h4>
+            <p class="text-xs text-zinc-400 mt-2">Vuelve más tarde o invita a más amigos con el código QR.</p>
+          </div>`;
+        return;
+      }
+
+      const p = mockProfiles[currentProfileIndex];
+      container.innerHTML = `
+        <div id="active-card" class="swipe-card absolute inset-0 glass-panel rounded-[32px] overflow-hidden border border-zinc-800 shadow-2xl flex flex-col justify-end p-5">
+          <img src="${p.photo}" onerror="this.src='${p.fallback}'" class="absolute inset-0 w-full h-full object-cover -z-10">
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent -z-10"></div>
+          
+          <div class="space-y-2">
+            <div class="flex items-baseline gap-2">
+              <h3 class="text-2xl font-black text-white">${p.name}, ${p.age}</h3>
+              <span class="text-[10px] bg-blue-600/80 px-2.5 py-0.5 rounded-full font-bold">${p.location}</span>
+            </div>
+            <div class="flex gap-1.5 flex-wrap">
+              ${p.hobbies.map(h => `<span class="bg-zinc-900/80 text-zinc-300 border border-zinc-700 text-[10px] px-2.5 py-1 rounded-lg font-bold">${h}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function triggerSwipe(direction) {
+      const card = document.getElementById('active-card');
+      if (!card) return;
+
+      if (direction === 'left') card.classList.add('swipe-left');
+      else card.classList.add('swipe-right');
+
+      setTimeout(() => {
+        currentProfileIndex++;
+        renderCurrentCard();
+      }, 300);
+    }
+
+    function switchTab(tab) {
+      document.getElementById('view-swipe').classList.toggle('hidden', tab !== 'swipe');
+      document.getElementById('view-coupons').classList.toggle('hidden', tab !== 'coupons');
+      
+      document.getElementById('tab-btn-swipe').className = tab === 'swipe' ? 'flex-1 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white transition' : 'flex-1 py-2 text-xs font-bold rounded-xl text-zinc-400 hover:text-white transition';
+      document.getElementById('tab-btn-coupons').className = tab === 'coupons' ? 'flex-1 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white transition' : 'flex-1 py-2 text-xs font-bold rounded-xl text-zinc-400 hover:text-white transition';
+    }
+
+    function showAuthModal(type) {
+      document.getElementById('auth-modal').classList.remove('hidden');
+      document.getElementById('auth-login-container').classList.toggle('hidden', type !== 'login');
+      document.getElementById('auth-register-container').classList.toggle('hidden', type !== 'register');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-modal').classList.add('hidden');
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const photoInput = document.getElementById('reg-photo');
+      let photoUrl = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=500';
+
+      const hobbies = Array.from(document.querySelectorAll('.reg-hobby:checked')).map(cb => cb.value);
+
+      const newUser = {
+        name: document.getElementById('reg-name').value,
+        age: document.getElementById('reg-age').value,
+        email: document.getElementById('reg-email').value,
+        interest: document.getElementById('reg-interest').value,
+        hobbies: hobbies,
+        photo: photoUrl
+      };
+
+      if (photoInput.files && photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(uploadEvent) {
+          newUser.photo = uploadEvent.target.result;
+          saveAndLoginUser(newUser);
+        };
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        saveAndLoginUser(newUser);
+      }
+    }
+
+    function saveAndLoginUser(user) {
+      currentUser = user;
+      localStorage.setItem('kupider_user', JSON.stringify(currentUser));
+      checkUserSession();
+      closeAuthModal();
+      alert(`¡Bienvenido a Kupider, ${user.name}! Tu cuenta se ha registrado correctamente.`);
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      currentUser = JSON.parse(localStorage.getItem('kupider_user')) || {
+        name: "Usuario Demo",
+        photo: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=500"
+      };
+      saveAndLoginUser(currentUser);
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('kupider_user');
+      currentUser = null;
+      checkUserSession();
+      alert("Has cerrado sesión.");
+    }
+  </script>
+</body>
+</html>
